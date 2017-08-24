@@ -1,5 +1,5 @@
 /**
- * Created by yaojia7 on 2017/7/28.
+ * Created by Jad on 2017/7/28.
  */
 const WebSocket = require('ws');
 const WebSocketServer = WebSocket.Server;

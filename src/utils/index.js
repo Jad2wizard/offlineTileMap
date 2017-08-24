@@ -1,5 +1,5 @@
 /**
- * Created by yaojia7 on 2017/8/24.
+ * Created by Jad on 2017/8/24.
  */
 
 let xhr = new XMLHttpRequest();

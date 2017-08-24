@@ -1,5 +1,5 @@
 /**
- * Created by yaojia7 on 2017/7/27.
+ * Created by Jad on 2017/7/27.
  */
 import React from 'react';
 import {Input, InputNumber, message, Button, Checkbox} from 'antd';

@@ -1,8 +1,7 @@
 /**
- * Created by yaojia7 on 2017/7/28.
+ * Created by Jad on 2017/7/28.
  */
 const fs = require('fs');
-// const archiver = require('archiver');
 const zipper = require('zip-local');
 const resolve = require('path').resolve;
 
@@ -31,28 +30,6 @@ let generateZip = (path, zipFilename) => {
         return;
     }
     zipper.sync.zip(path).compress().save(zipFilename);
-    // const arch = archiver('zip');
-    // let output = fs.createWriteStream(resolve(path, 'test.zip'))
-    // arch.pipe(output);
-    // let files = [];
-    // let fetchFilePath = (currPath) => {
-    //     if(fs.statSync(currPath).isFile()){
-    //         files.push(currPath);
-    //     } else {
-    //         for(let f of fs.readdirSync(currPath)){
-    //             fetchFilePath(resolve(currPath, f));
-    //         }
-    //     }
-    // };
-    // fetchFilePath(path);
-    // for(let f of files){
-    //     let filename = f.split(splitStr);
-    //     filename = filename[filename.length - 1];
-    //     if(filename !== 'test.zip') {
-    //         arch.append(fs.createReadStream(f), {name: filename});
-    //     }
-    // }
-    // arch.finalize();
 };
 module.exports = {
     generateZip,
