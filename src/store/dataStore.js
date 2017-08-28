@@ -26,6 +26,16 @@ class DataStore{
         this.zoomMin = 0;
     }
 
+    /**
+     * 如果tile url模板中含有reverseY字段，则在计算tile图片xy值时需要特殊处理
+     * @returns {boolean}
+     */
+    @computed get reverseY(){
+        if(this.tileUrlTemplate.includes('reverseY')){
+            return true;
+        }
+        return false;
+    }
     //存放每个zoom值由经纬度转换成的x y值
     //xyzList = [
     /**
@@ -46,10 +56,10 @@ class DataStore{
         }
         for(let z = zoom1; z <= zoom2; ++z){
             let res = [];
-            res.push(computeTileXYZ(lon1, lat1, z));
-            res.push(computeTileXYZ(lon1, lat2, z));
-            res.push(computeTileXYZ(lon2, lat1, z));
-            res.push(computeTileXYZ(lon2, lat2, z));
+            res.push(computeTileXYZ(lon1, lat1, z, this.reverseY));
+            res.push(computeTileXYZ(lon1, lat2, z, this.reverseY));
+            res.push(computeTileXYZ(lon2, lat1, z, this.reverseY));
+            res.push(computeTileXYZ(lon2, lat2, z, this.reverseY));
             let xmin = Number.MAX_VALUE;
             let ymin = Number.MAX_VALUE;
             let xmax = Number.MIN_VALUE;
@@ -98,7 +108,7 @@ class DataStore{
 
     handleClick = () => {
         this.loadEnable = false;
-        fetch(`/api/startLoad?downloadNum=${this.tileCount}`).then(data => {
+        fetch(`/api/startLoad?downloadNum=${this.tileCount}&urlTemplate=${this.tileUrlTemplate}`).then(data => {
             let xyzArr = [
                 /**
                  * {x: , y: , z: }
@@ -119,7 +129,7 @@ class DataStore{
             let timer = setInterval(()=>{
                 if(index < xyzArr.length) {
                     let item = xyzArr[index];
-                    let tileUrl = this.tileUrlTemplate.replace('{z}/{x}/{y}', `${item.z}/${item.x}/${item.y}`);
+                    let tileUrl = this.tileUrlTemplate.replace(/\{z\}\/\{x\}\/\{y\}|\{z\}\/\{x\}\/\{reverseY\}/g, `${item.z}/${item.x}/${item.y}`);
                     getUrl(tileUrl);
                     index++;
                 } else {

@@ -7,8 +7,7 @@ import {inject, observer} from 'mobx-react';
 
 import styles from './Info.scss';
 
-// let tileUrlTemplate = `http://cesiumjs.org.s3-website-us-east-1.amazonaws.com/hosted-apps/blackmarble/{z}/{x}/{y}.png`;
-// let tileUrlTemplate = `https://api.mapbox.com/styles/v1/doudoulaiye/cj46fx5xn0alp2rp8j2iz2ucy/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZG91ZG91bGFpeWUiLCJhIjoiY2oxazN0MTd6MDIxazJxcGptcjhkMGNiYSJ9.N1TxfoQ-kKfKJkGuQ7F42Q`;
+// let tileUrlTemplate = `http://cesiumjs.org.s3-website-us-east-1.amazonaws.com/hosted-apps/blackmarble/{z}/{x}/{reverseY}.png`;
 
 @inject('dataStore')
 @observer
@@ -22,10 +21,10 @@ export default class extends React.Component{
         };
 
         //websocket用于实时更新下载数量
-        this.ws = new WebSocket('ws://localhost:3000/');
+        this.ws = new WebSocket(`ws://${location.host}/`);
         this.ws.onmessage = (msg) => {
             if(Number.isNaN(Number(msg.data))){
-                message.success('Download Complete!');
+                message.success('Download Complete!!');
                 setTimeout(() => {
                     this.setState({
                         tileLoadedCount: 0

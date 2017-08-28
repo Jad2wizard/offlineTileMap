@@ -2,6 +2,7 @@
  * Created by Jad on 2017/7/28.
  */
 const fs = require('fs');
+const os = require('os');
 const zipper = require('zip-local');
 const resolve = require('path').resolve;
 
@@ -31,7 +32,29 @@ let generateZip = (path, zipFilename) => {
     }
     zipper.sync.zip(path).compress().save(zipFilename);
 };
+
+/**
+ * 获取本地IPv4地址，若没有连接网络则返回127.0.0.1
+ * @returns {string}
+ */
+let getLocalIP = () => {
+    try {
+        let platform = os.platform();
+        let networkInterface = os.networkInterfaces();
+        if (platform.startsWith('win')) {
+            return networkInterface['本地连接'][1].address;
+        }
+        if (platform.startsWith('lin')) {
+            return networkInterface.eth0[0].address;
+        }
+        return '127.0.0.1';
+    } catch(e) {
+        return '127.0.0.1';
+    }
+};
+
 module.exports = {
     generateZip,
+    getLocalIP,
     getFilesCount
 };

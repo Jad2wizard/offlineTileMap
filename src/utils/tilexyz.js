@@ -8,8 +8,7 @@
  * @param lat_deg
  * @param zoom
  */
-let computeTileXYZ = (lon_deg, lat_deg, zoom) => {
-    let isReverseY = false;
+let computeTileXYZ = (lon_deg, lat_deg, zoom, isReverseY = false) => {
     if(lon_deg < -180 || lon_deg > 180 || lat_deg > 85.05 || lat_deg < -85.05 || zoom < 0 || zoom >19){
         return null;
     }

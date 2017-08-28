@@ -1,24 +1,27 @@
 /**
- * Created by yaojia7 on 2017/7/26.
+ * Created by Jad on 2017/7/26.
  */
+const {getLocalIP} = require('./server/utils');
 
 if(!process.env.NODE_ENV){
     process.env.NODE_ENV = true;
 }
+
+const localIP = getLocalIP();
 const webpack = require('webpack');
 const DEVELOP = JSON.parse(process.env.NODE_ENV);
 module.exports = {
     devtool: 'inline-source-map',
     entry: (DEVELOP)?[
         'eventsource-polyfill',
-        'webpack-hot-middleware/client?path=http://127.0.0.1:3000/__webpack_hmr&timeout=20000',
+        `webpack-hot-middleware/client?path=http://${localIP}:3000/__webpack_hmr&timeout=20000`,
         __dirname+'/src/index.js'
     ]: [
         __dirname+'/src/index.js'
     ],
     output: {
         path: __dirname + '/public/js',
-        publicPath: 'http://127.0.0.1:3000/js',
+        publicPath: `http://${localIP}:3000/js`,
         filename: "bundle.js"
     },
     plugins: (DEVELOP)?[
