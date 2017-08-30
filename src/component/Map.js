@@ -1,5 +1,5 @@
 /**
- * Created by Jad on 2017/8/24.
+ * Created by yaojia7 on 2017/8/24.
  */
 import React from 'react';
 import {inject} from 'mobx-react';
@@ -10,18 +10,20 @@ Cesium = window.Cesium;
 
 @inject('dataStore')
 export default class extends React.Component{
-    /**
-     *第一个tile图片截取点，根据两个点的位置取地球上最小面积的矩形区域作为需要下载的tile图片范围
-     * @type string
-     */
-    @observable firstPoint = null;
-    /**
-     *第二个tile图片截取点
-     * @type string
-     */
-    @observable secondPoint = null;
     constructor(props){
         super(props);
+        /**
+         *第一个tile图片截取点，根据两个点的位置取地球上最小面积的矩形区域作为需要下载的tile图片范围
+         * 由dataStore(lon1, lat1)生成该点位置
+         * @type Entity
+             */
+        this.firstPoint = null;
+        /**
+         *第二个tile图片截取点
+         * 由dataStore(lon2, lat2)生成该点位置
+         * @type Entity
+         */
+        this.secondPoint = null;
         this.dataStore = this.props.dataStore;
         this.viewer = null;
         //调整摄像机对准东半球
@@ -38,27 +40,21 @@ export default class extends React.Component{
         //由 firstPoint和secondPoint画出的矩形区域实体
         this.rectangle = null;
 
-        //监听firstPoint或secondPoint变化后自动重绘矩形区域
+        //监听矩形区域位置发生变化后自动重绘矩形区域
         autorunAsync(() => {
-            //如果地图上已有两个点则根据两个点绘制矩形区域，若无则删除矩形区域
-            if(this.firstPoint && this.secondPoint) {
-                this.drawRect(this.firstPoint, this.secondPoint);
-            } else{
-                this.viewer.entities.remove(this.rectangle);
+            if(!this.dataStore.isFirstPointNull && !this.dataStore.isSecondPointNull) {
+                let pointA = new Cesium.Cartesian3.fromDegrees(this.dataStore.lon1, this.dataStore.lat1);
+                let pointB = new Cesium.Cartesian3.fromDegrees(this.dataStore.lon2, this.dataStore.lat2);
+                this.drawRect(pointA, pointB);
             }
         })
 
+        /**
+         * 检测到矩形经纬度发生变化后更改点的位置
+         */
         autorunAsync(() => {
-            if(this.firstPoint){
-                let position = new Cesium.Cartographic.fromCartesian(this.firstPoint.position._value);
-                this.dataStore.lon1 = Cesium.Math.toDegrees(position.longitude); //将经度由Radians(-pi, pi)转为degree(-180, 180)
-                this.dataStore.lat1 = Cesium.Math.toDegrees(position.latitude);
-            }
-            if(this.secondPoint){
-                let position = new Cesium.Cartographic.fromCartesian(this.secondPoint.position._value);
-                this.dataStore.lon2 = Cesium.Math.toDegrees(position.longitude); //将经度由Radians(-pi, pi)转为degree(-180, 180)
-                this.dataStore.lat2 = Cesium.Math.toDegrees(position.latitude);
-            }
+            this.modifyPointPosition('1', this.dataStore.lon1, this.dataStore.lat1);
+            this.modifyPointPosition('2', this.dataStore.lon2, this.dataStore.lat2);
         })
     }
 
@@ -92,6 +88,11 @@ export default class extends React.Component{
                     show: true
                 })
             });
+
+            window.viewer = this.viewer;
+
+            this.firstPoint = this.drawPoint(new Cesium.Cartesian3.fromDegrees(this.dataStore.lon1, this.dataStore.lat1));
+            this.secondPoint = this.drawPoint(new Cesium.Cartesian3.fromDegrees(this.dataStore.lon2, this.dataStore.lat2));
 
             //添加overlay到viewer中，并设置overlay样式
             this.viewer.container.appendChild(this.overlay);
@@ -137,21 +138,52 @@ export default class extends React.Component{
                 //判断点击处是否有实体存在，若存在实体，且实体为两个截取点之一，则删除该点
                 if (Cesium.defined(pick)) {
                     let clickedEntity = pick.id;
-                    if(clickedEntity === this.firstPoint){
-                        this.viewer.entities.remove(this.firstPoint);
-                        this.firstPoint = this.secondPoint;
-                        this.secondPoint = null;
-                    } else if(clickedEntity === this.secondPoint){
-                        this.viewer.entities.remove(this.secondPoint);
-                        this.secondPoint = null;
+                    if(this.isPositionOverlap(clickedEntity, this.firstPoint) && this.isPositionOverlap(clickedEntity, this.secondPoint)) {
+                        //如果鼠标点击点事两个点的重合点，则将两个点位置都置零，地图上显示效果为删除两个点
+                        this.dataStore.modifyLonLat('1', 0, 0);
+                        this.dataStore.modifyLonLat('2', 0, 0);
+                    } else if (this.isPositionOverlap(clickedEntity, this.firstPoint)) {
+                        //点击第一个点，则将第一个点移到第二个点处，地图上显示效果为删除第一个点
+                        this.dataStore.modifyLonLat('1', this.dataStore.lon2, this.dataStore.lat2);
+                    } else if (this.isPositionOverlap(clickedEntity, this.secondPoint)) {
+                        //点击第二个点，则将第二个点移到第一个点出，地图上显示效果为删除第二个点
+                        this.dataStore.modifyLonLat('2', this.dataStore.lon1, this.dataStore.lat1);
                     } else {
-                        this.drawPoint(clickPosition);
+                        //点击其它实体，则根据点击点改变两个点位置
+                        this.changePointsPosition(clickPosition);
                     }
                 } else {
-                    this.drawPoint(clickPosition);
+                    //点击地图空白处，则根据点击点改变连个点位置
+                    this.changePointsPosition(clickPosition);
                 }
             }.bind(this), Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        }
+    }
 
+    /**
+     * 判断两个点是否重合
+     * @param en1
+     * @param en2
+     */
+    isPositionOverlap = (en1, en2) => {
+        return en1.position._value.equals(en2.position._value);
+    }
+
+    /**
+     * 移动第一个点到第二个点位置，移动第二点到clickPosition处
+     * @param clickPosition | Cartesian3
+     */
+    changePointsPosition = (clickPosition) => {
+        clickPosition = new Cesium.Cartographic.fromCartesian(clickPosition);
+        let lon = Cesium.Math.toDegrees(clickPosition.longitude);
+        let lat = Cesium.Math.toDegrees(clickPosition.latitude);
+        if(this.dataStore.isFirstPointNull){
+            this.dataStore.modifyLonLat('1', lon, lat);
+        } else if(this.dataStore.isSecondPointNull || this.dataStore.isTwoPointOverap){
+            this.dataStore.modifyLonLat('2', lon, lat);
+        } else {
+            this.dataStore.modifyLonLat('1', this.dataStore.lon2, this.dataStore.lat2);
+            this.dataStore.modifyLonLat('2', lon, lat);
         }
     }
 
@@ -167,26 +199,15 @@ export default class extends React.Component{
                 color: Cesium.Color.RED
             },
         });
-
-        if(!this.firstPoint){//当前地图零个点，则绘制的点赋值给firstPoint
-            this.firstPoint = entity;
-        } else if(!this.secondPoint){//当前地图一个点，则绘制的点赋值给secondPoint
-            this.secondPoint = entity;
-        } else { //当前地图两个点，则删除firstPoint，secondPoint赋值给firstPoint，绘制的点再赋值给secondPoint
-            this.viewer.entities.remove(this.firstPoint);
-            this.firstPoint = this.secondPoint;
-            this.secondPoint = entity;
-        }
+        return entity;
     };
 
     /**
      * 根据两个实体的位置画出一个矩形区域
-     * @param entityA | entity
-     * @param entityB | entity
+     * @param pointA | Cartesian3
+     * @param pointB | Cartesian3
      */
-    drawRect = (entityA, entityB) => {
-        let pointA = entityA.position._value;
-        let pointB = entityB.position._value;
+    drawRect = (pointA, pointB) => {
         pointA = new Cesium.Cartographic.fromCartesian(pointA); //将笛卡尔坐标转换为经纬度
         pointB = new Cesium.Cartographic.fromCartesian(pointB);
         let west = Math.min(pointA.longitude, pointB.longitude);
@@ -206,6 +227,25 @@ export default class extends React.Component{
             }
         })
     };
+
+    /**
+     * 设置第一个点或者第二个点的位置
+     * @param flag | '1' '2'
+     * @param lon | Number
+     * @param lat | Number
+     */
+    modifyPointPosition = (flag, lon, lat) => {
+        let entity = null;
+        if(flag === '1'){
+            entity = this.firstPoint;
+        } else if (flag === '2'){
+            entity = this.secondPoint;
+        }
+        if(entity){
+            entity.position = new Cesium.Cartesian3.fromDegrees(lon, lat, 0);
+        }
+    }
+
     render(){
         return (
             <div className={styles.container} id="container"></div>

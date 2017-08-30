@@ -1,13 +1,13 @@
 /**
- * Created by Jad on 2017/8/24.
+ * Created by yaojia7 on 2017/8/24.
  */
-import {observable, computed} from 'mobx';
+import {observable, computed, action} from 'mobx';
 import {message} from 'antd';
 import computeTileXYZ from './../utils/tilexyz.js';
 import {getUrl} from './../utils';
 
 class DataStore{
-    //初始化经纬度范围
+    //根据经纬度值(lon1, lat1)和(lon2, lat2)生成的两个点定义一个矩形区域
     @observable lon1= 0;
     @observable lon2= 0;
     @observable lat1= 0;
@@ -105,6 +105,35 @@ class DataStore{
         }
         this[key] = Number(value);
     };
+
+    @action modifyLonLat = (flag, lon, lat) => {
+        this[`lon${flag}`] = lon;
+        this[`lat${flag}`] = lat;
+    }
+
+    /**
+     * 判断第一个点是否存在
+     * @returns {boolean}
+     */
+    get isFirstPointNull(){
+        return this.lon1 === 0 && this.lat1 === 0;
+    }
+
+    /**
+     * 判断第二个点是否存在
+     * @returns {boolean}
+     */
+    get isSecondPointNull(){
+        return this.lon2 === 0 && this.lat2 === 0;
+    }
+
+    /**
+     * 判断两个点位置是否重叠
+     * @returns {boolean}
+     */
+    get isTwoPointOverap(){
+        return (this.lon1 + this.lat1 + this.lon2 + this.lat2) > 0 && this.lon1 === this.lon2 && this.lat1 === this.lat2;
+    }
 
     handleClick = () => {
         this.loadEnable = false;
