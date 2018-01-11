@@ -116,7 +116,7 @@ export default class extends React.Component{
 
             //设置鼠标悬浮事件，显示当前鼠标处的经纬度信息
             let viewer = this.viewer
-            viewer.screenSpaceEventHandler.setInputAction(function (movement) {
+            viewer.screenSpaceEventHandler.setInputAction(function (movement) { //movement: 事件参数，取值由事件类型决定
                 let cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid); //将鼠标的屏幕位置转换为球面笛卡尔坐标系
                 if (cartesian) {
                     let cartographic = Cesium.Cartographic.fromCartesian(cartesian); //笛卡尔坐标转换为经纬度
