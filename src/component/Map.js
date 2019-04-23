@@ -4,7 +4,7 @@
 import React from 'react';
 import {inject} from 'mobx-react';
 import {autorunAsync, observable} from 'mobx';
-import styles from './Map.scss';
+import styles from './Map.less';
 
 Cesium = window.Cesium;
 

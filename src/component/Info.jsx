@@ -2,12 +2,10 @@
  * Created by Jad on 2017/7/27.
  */
 import React from 'react';
-import {Input, InputNumber, message, Button, Checkbox} from 'antd';
+import {Input, message, Button } from 'antd';
 import {inject, observer} from 'mobx-react';
 
-import styles from './Info.scss';
-
-// let tileUrlTemplate = `http://cesiumjs.org.s3-website-us-east-1.amazonaws.com/hosted-apps/blackmarble/{z}/{x}/{reverseY}.png`;
+import styles from './Info.less';
 
 @inject('dataStore')
 @observer
@@ -50,87 +48,101 @@ export default class extends React.Component{
                 <div className={styles.item}>
                     <span>tileUrl模板</span>
                     <div className={styles.input}>
-                    <Input
-                        size='small'
-                        value={this.dataStore.tileUrlTemplate}
-                        onChange={(evt)=>{
-                                this.dataStore.tileUrlTemplate = evt.target.value;
-                        }}
-                    />
+                        <Input
+                            size='small'
+                            value={this.dataStore.tileUrlTemplate}
+                            onChange={(evt)=>{
+                                    this.dataStore.tileUrlTemplate = evt.target.value;
+                            }}
+                        />
                     </div>
                 </div>
                 <div className={styles.item}>
                     <span>经度1</span>
-                    <InputNumber
+                    <Input
                         size='small'
                         key='lon1'
-                        placeholder="0"
-                        min={this.dataStore.lonMin}
-                        max={this.dataStore.lonMax}
                         value={this.dataStore.lon1}
-                        step={0.1}
-                        onChange={this.dataStore.handleChange.bind(this.dataStore, 'lon1', [this.dataStore.lonMin, this.dataStore.lonMax])}
+                        onChange={
+                            this.dataStore.handleChange.bind(
+                                this.dataStore,
+                                'lon1',
+                                [this.dataStore.lonMin, this.dataStore.lonMax]
+                            )
+                        }
                     />
                 </div>
                 <div className={styles.item}>
                     <span>经度2</span>
-                    <InputNumber
+                    <Input
                         size='small'
                         key='lon2'
-                        placeholder="0"
-                        min={this.dataStore.lonMin}
-                        max={this.dataStore.lonMax}
                         value={this.dataStore.lon2}
-                        step={0.1}
-                        onChange={this.dataStore.handleChange.bind(this.dataStore, 'lon2', [this.dataStore.lonMin, this.dataStore.lonMax])}
+                        onChange={
+                            this.dataStore.handleChange.bind(
+                                this.dataStore,
+                                'lon2',
+                                [this.dataStore.lonMin, this.dataStore.lonMax]
+                            )
+                        }
                     />
                 </div>
                 <div className={styles.item}>
                     <span>纬度1</span>
-                    <InputNumber
+                    <Input
                            size='small'
                            key='lat1'
-                           placeholder="0"
-                           min={this.dataStore.latMin}
-                           max={this.dataStore.latMax}
                            value={this.dataStore.lat1}
-                           step={0.1}
-                           onChange={this.dataStore.handleChange.bind(this.dataStore, 'lat1', [this.dataStore.latMin, this.dataStore.latMax])}
+                           onChange={
+                               this.dataStore.handleChange.bind(
+                                   this.dataStore,
+                                   'lat1',
+                                   [this.dataStore.latMin, this.dataStore.latMax]
+                               )
+                           }
                     />
                 </div>
                 <div className={styles.item}>
                     <span>纬度2</span>
-                    <InputNumber
+                    <Input
                            size='small'
                            key='lat2'
-                           placeholder="0"
-                           min={this.latMin}
-                           max={this.latMax}
                            value={this.dataStore.lat2}
-                           step={0.1}
-                           onChange={this.dataStore.handleChange.bind(this.dataStore, 'lat2', [this.dataStore.latMin, this.dataStore.latMax])}
+                           onChange={
+                               this.dataStore.handleChange.bind(
+                                   this.dataStore,
+                                   'lat2',
+                                   [this.dataStore.latMin, this.dataStore.latMax]
+                               )
+                           }
                     />
                 </div>
                 <div className={styles.item}>
                     <span>zoom1</span>
-                    <InputNumber
+                    <Input
                            size='small'
                            key='zoom1'
-                           placeholder="0"
-                           min={this.zoomMin}
-                           max={this.zoomMax}
-                           onChange={this.dataStore.handleChange.bind(this.dataStore, 'zoom1', [this.dataStore.zoomMin, this.dataStore.zoomMax])}
+                           onChange={
+                               this.dataStore.handleChange.bind(
+                                   this.dataStore,
+                                   'zoom1',
+                                   [this.dataStore.zoomMin, this.dataStore.zoomMax]
+                               )
+                           }
                     />
                 </div>
                 <div className={styles.item}>
                     <span>zoom2</span>
-                    <InputNumber
+                    <Input
                            size='small'
                            key='zoom2'
-                           placeholder="0"
-                           min={this.zoomMin}
-                           max={this.zoomMax}
-                           onChange={this.dataStore.handleChange.bind(this.dataStore, 'zoom2', [this.dataStore.zoomMin, this.dataStore.zoomMax])}
+                           onChange={
+                               this.dataStore.handleChange.bind(
+                                   this.dataStore,
+                                   'zoom2',
+                                   [this.dataStore.zoomMin, this.dataStore.zoomMax]
+                               )
+                           }
                     />
                 </div>
                 <div className={styles.item}>
@@ -140,7 +152,11 @@ export default class extends React.Component{
                     <span>已下载数量</span><span>{this.state.tileLoadedCount}</span>
                 </div>
                 <div className={styles.item}>
-                    <Button disabled={!this.dataStore.loadEnable} type='primary' onClick={this.dataStore.handleClick}>点击下载</Button>
+                    <Button
+                        disabled={!this.dataStore.loadEnable}
+                        type='primary'
+                        onClick={this.dataStore.handleClick}
+                    >点击下载</Button>
                 </div>
             </div>
         )

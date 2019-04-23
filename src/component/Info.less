@@ -1,0 +1,28 @@
+.container{
+  padding: 10px;
+  width: 100%;
+  height: 200px;
+  margin-top: 20px;
+}
+.item{
+  width: 100%;
+  margin-left: 0px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  >span:first-child {
+    display: inline-block;
+    text-align: right;
+    margin-right: 5px;
+    width: 70px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    &:after{
+      content: ':';
+    }
+  }
+  >input, >div{
+    width: 100%;
+  }
+}

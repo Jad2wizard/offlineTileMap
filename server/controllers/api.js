@@ -38,8 +38,9 @@ let postTileImg = async (ctx) => {
     let z = zxy[0];
     let x = zxy[1];
     let y = zxy[2];
-    let imgFileName = resolve(zipFolder, z, x, `${y}.png`);
-    let srcFileName = resolve(resourceFolder, z, x, `${y}.png`);
+    console.log(zxy);
+    let imgFileName = resolve(zipFolder, z+'', x+'', `${y}.png`);
+    let srcFileName = resolve(resourceFolder, z+'', x+'', `${y}.png`);
     fs.writeFile(imgFileName, dataBuffer, function(err){
         if(err){
             console.error(err);

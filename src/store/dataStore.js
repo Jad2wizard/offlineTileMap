@@ -15,7 +15,8 @@ class DataStore{
     @observable zoom1= 0;
     @observable zoom2= 0;
     @observable loadEnable = true;
-    @observable tileUrlTemplate = 'https://api.mapbox.com/styles/v1/mapbox/streets-v10/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoieWFvamlhIiwiYSI6ImNqNTF3YjhjdjA4eGQycXFkajMyZ2kwaHkifQ.vWDLw3M_MZqzVmach-S0GA';
+    @observable tileUrlTemplate = 'https://api.mapbox.com/styles/v1/doudoulaiye/cj8smxtzfbjx22rs5nwfb7srz/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZG91ZG91bGFpeWUiLCJhIjoiY2oxazN0MTd6MDIxazJxcGptcjhkMGNiYSJ9.N1TxfoQ-kKfKJkGuQ7F42Q';
+    // @observable tileUrlTemplate = 'https://api.mapbox.com/styles/v1/mapbox/streets-v10/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoieWFvamlhIiwiYSI6ImNqNTF3YjhjdjA4eGQycXFkajMyZ2kwaHkifQ.vWDLw3M_MZqzVmach-S0GA';
 
     constructor(){
         this.latMax = 85;
@@ -95,7 +96,8 @@ class DataStore{
         return tileCount;
     }
 
-    handleChange = (key, range, value) => {
+    handleChange = (key, range, e) => {
+        const value = e.target ? e.target.value : e;
         if (Number.isNaN(Number(value))) {
             message.error(`请输入数字${(value)}`);
             return;

@@ -39,12 +39,12 @@ module.exports = {
                 use: 'babel-loader'
             },
             {
-                test: /\.(css|scss)$/,
-                use: [
-                    "style-loader",
-                    "css-loader?modules&localIdentName=[path][name]---[local]---[hash:base64:5]",
-                    "sass-loader",
-                ]
+                test: /\.(css)/,
+                loader: "style-loader!css-loader?modules&localIdentName=[path][name]--[local]--[hash:base64:5]"
+            },
+            {
+                test: /\.(less)/,
+                loader: "style-loader!css-loader?modules&localIdentName=[path][name]--[local]--[hash:base64:5]!less-loader"
             },
             {
                 test: /\.(png|jpg)$/,

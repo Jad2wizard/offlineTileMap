@@ -5,7 +5,7 @@ import React from 'react';
 import {inject,observer} from 'mobx-react';
 import Info from './../component/Info.jsx';
 import Map from './../component/Map.js';
-import styles from './index.scss';
+import styles from './index.less';
 
 @inject('dataStore')
 @observer
