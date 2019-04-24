@@ -67,7 +67,6 @@ export default class extends React.Component{
                             this.dataStore.handleChange.bind(
                                 this.dataStore,
                                 'lon1',
-                                [this.dataStore.lonMin, this.dataStore.lonMax]
                             )
                         }
                     />
@@ -82,7 +81,6 @@ export default class extends React.Component{
                             this.dataStore.handleChange.bind(
                                 this.dataStore,
                                 'lon2',
-                                [this.dataStore.lonMin, this.dataStore.lonMax]
                             )
                         }
                     />
@@ -97,7 +95,6 @@ export default class extends React.Component{
                                this.dataStore.handleChange.bind(
                                    this.dataStore,
                                    'lat1',
-                                   [this.dataStore.latMin, this.dataStore.latMax]
                                )
                            }
                     />
@@ -112,7 +109,6 @@ export default class extends React.Component{
                                this.dataStore.handleChange.bind(
                                    this.dataStore,
                                    'lat2',
-                                   [this.dataStore.latMin, this.dataStore.latMax]
                                )
                            }
                     />
@@ -126,7 +122,6 @@ export default class extends React.Component{
                                this.dataStore.handleChange.bind(
                                    this.dataStore,
                                    'zoom1',
-                                   [this.dataStore.zoomMin, this.dataStore.zoomMax]
                                )
                            }
                     />
@@ -140,7 +135,6 @@ export default class extends React.Component{
                                this.dataStore.handleChange.bind(
                                    this.dataStore,
                                    'zoom2',
-                                   [this.dataStore.zoomMin, this.dataStore.zoomMax]
                                )
                            }
                     />

@@ -50,6 +50,8 @@ class DataStore{
     @computed get xyzList(){
         let xyzList = [];
         let {lon1, lon2, lat1, lat2, zoom1, zoom2} = this;
+        if(!this.coordValidate)
+            return;
         if(zoom1 > zoom2){
             let tmp = zoom1;
             zoom1 = zoom2;
@@ -85,6 +87,7 @@ class DataStore{
                 z
             });
         }
+        console.log(xyzList);
         return xyzList;
     }
 
@@ -96,21 +99,38 @@ class DataStore{
         return tileCount;
     }
 
-    handleChange = (key, range, e) => {
+    handleChange = (key, e) => {
         const value = e.target ? e.target.value : e;
-        if (Number.isNaN(Number(value))) {
-            message.error(`请输入数字${(value)}`);
-            return;
-        }
-        if (value < range[0] || value > range[1]) {
-            message.error('输入值不在设定的范围内');
-        }
-        this[key] = Number(value);
+        this[key] = value;
     };
 
     @action modifyLonLat = (flag, lon, lat) => {
         this[`lon${flag}`] = lon;
         this[`lat${flag}`] = lat;
+    }
+
+    /**
+     * 判断当前的经纬度数值是否正确
+     */
+    get coordValidate(){
+        return !Number.isNaN(Number(this.lon1)) &&
+            !Number.isNaN(Number(this.lon2)) &&
+            !Number.isNaN(Number(this.lat1)) &&
+            !Number.isNaN(Number(this.lat2)) &&
+            !Number.isNaN(Number(this.zoom1)) &&
+            !Number.isNaN(Number(this.zoom2)) &&
+            this.lon1 >= this.lonMin &&
+            this.lon1 <= this.lonMax &&
+            this.lon2 >= this.lonMin &&
+            this.lon2 <= this.lonMax &&
+            this.lat1 >= this.latMin &&
+            this.lat1 <= this.latMax &&
+            this.lat2 >= this.latMin &&
+            this.lat2 <= this.latMax &&
+            this.zoom1 >= this.zoomMin &&
+            this.zoom1 <= this.zoomMax &&
+            this.zoom2 >= this.zoomMin &&
+            this.zoom2 <= this.zoomMax
     }
 
     /**
@@ -137,37 +157,27 @@ class DataStore{
         return (this.lon1 + this.lat1 + this.lon2 + this.lat2) > 0 && this.lon1 === this.lon2 && this.lat1 === this.lat2;
     }
 
-    handleClick = () => {
+    handleClick = async () => {
         this.loadEnable = false;
-        fetch(`/api/startLoad?downloadNum=${this.tileCount}&urlTemplate=${this.tileUrlTemplate}`).then(data => {
-            let xyzArr = [
-                /**
-                 * {x: , y: , z: }
-                 */
-            ];
-            for (let item of this.xyzList) {
-                for (let x = item.x[0]; x <= item.x[1]; ++x) {
-                    for (let y = item.y[0]; y <= item.y[1]; ++y) {
-                        xyzArr.push({
-                            x,
-                            y,
-                            z: item.z
-                        });
-                    }
+        await fetch(`/api/startLoad?downloadNum=${this.tileCount}&urlTemplate=${this.tileUrlTemplate}`);
+        let xyzArr = [
+            /**
+             * {x: , y: , z: }
+             */
+        ];
+        for (let item of this.xyzList) {
+            for (let x = item.x[0]; x <= item.x[1]; ++x) {
+                for (let y = item.y[0]; y <= item.y[1]; ++y) {
+                    const z = item.z;
+                    let tileUrl = this.tileUrlTemplate
+                        .replace(
+                            /\{z\}\/\{x\}\/\{y\}|\{z\}\/\{x\}\/\{reverseY\}/g,
+                            `${z}/${x}/${y}`
+                        );
+                    await getUrl({x, y, z, orgUrl: tileUrl});
                 }
             }
-            let index = 0;
-            let timer = setInterval(()=>{
-                if(index < xyzArr.length) {
-                    let item = xyzArr[index];
-                    let tileUrl = this.tileUrlTemplate.replace(/\{z\}\/\{x\}\/\{y\}|\{z\}\/\{x\}\/\{reverseY\}/g, `${item.z}/${item.x}/${item.y}`);
-                    getUrl(tileUrl);
-                    index++;
-                } else {
-                    clearInterval(timer);
-                }
-            }, 200);
-        });
+        }
     };
 }
 

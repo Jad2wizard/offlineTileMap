@@ -42,7 +42,11 @@ export default class extends React.Component{
 
         //监听矩形区域位置发生变化后自动重绘矩形区域
         autorunAsync(() => {
-            if(!this.dataStore.isFirstPointNull && !this.dataStore.isSecondPointNull) {
+            if(
+                !this.dataStore.isFirstPointNull &&
+                !this.dataStore.isSecondPointNull &&
+                this.dataStore.coordValidate
+            ) {
                 let pointA = new Cesium.Cartesian3.fromDegrees(this.dataStore.lon1, this.dataStore.lat1);
                 let pointB = new Cesium.Cartesian3.fromDegrees(this.dataStore.lon2, this.dataStore.lat2);
                 this.drawRect(pointA, pointB);
