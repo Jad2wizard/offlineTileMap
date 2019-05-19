@@ -48,47 +48,51 @@ class DataStore{
      */
     //];
     @computed get xyzList(){
-        let xyzList = [];
-        let {lon1, lon2, lat1, lat2, zoom1, zoom2} = this;
-        if(!this.coordValidate)
-            return;
-        if(zoom1 > zoom2){
-            let tmp = zoom1;
-            zoom1 = zoom2;
-            zoom2 = tmp;
-        }
-        for(let z = zoom1; z <= zoom2; ++z){
-            let res = [];
-            res.push(computeTileXYZ(lon1, lat1, z, this.reverseY));
-            res.push(computeTileXYZ(lon1, lat2, z, this.reverseY));
-            res.push(computeTileXYZ(lon2, lat1, z, this.reverseY));
-            res.push(computeTileXYZ(lon2, lat2, z, this.reverseY));
-            let xmin = Number.MAX_VALUE;
-            let ymin = Number.MAX_VALUE;
-            let xmax = Number.MIN_VALUE;
-            let ymax = Number.MIN_VALUE;
-            for(let r of res){
-                if(r.x > xmax){
-                    xmax = r.x;
-                }
-                if(r.x < xmin){
-                    xmin = r.x;
-                }
-                if(r.y > ymax){
-                    ymax = r.y;
-                }
-                if(r.y < ymin){
-                    ymin = r.y;
-                }
+        try {
+            let xyzList = [];
+            let {lon1, lon2, lat1, lat2, zoom1, zoom2} = this;
+            if (!this.coordValidate)
+                throw('invalidate extent');
+            if (zoom1 > zoom2) {
+                let tmp = zoom1;
+                zoom1 = zoom2;
+                zoom2 = tmp;
             }
-            xyzList.push({
-                x: [xmin, xmax],
-                y: [ymin, ymax],
-                z
-            });
+            for (let z = zoom1; z <= zoom2; ++z) {
+                let res = [];
+                res.push(computeTileXYZ(lon1, lat1, z, this.reverseY));
+                res.push(computeTileXYZ(lon1, lat2, z, this.reverseY));
+                res.push(computeTileXYZ(lon2, lat1, z, this.reverseY));
+                res.push(computeTileXYZ(lon2, lat2, z, this.reverseY));
+                let xmin = Number.MAX_VALUE;
+                let ymin = Number.MAX_VALUE;
+                let xmax = Number.MIN_VALUE;
+                let ymax = Number.MIN_VALUE;
+                for (let r of res) {
+                    if (r.x > xmax) {
+                        xmax = r.x;
+                    }
+                    if (r.x < xmin) {
+                        xmin = r.x;
+                    }
+                    if (r.y > ymax) {
+                        ymax = r.y;
+                    }
+                    if (r.y < ymin) {
+                        ymin = r.y;
+                    }
+                }
+                xyzList.push({
+                    x: [xmin, xmax],
+                    y: [ymin, ymax],
+                    z
+                });
+            }
+            return xyzList;
+        } catch (e){
+            console.warn(e);
+            return [];
         }
-        console.log(xyzList);
-        return xyzList;
     }
 
     @computed get tileCount(){

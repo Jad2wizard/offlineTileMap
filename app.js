@@ -41,6 +41,10 @@ app.use(koaStatic(
 
 app.use(routers.routes()).use(routers.allowedMethods());
 
+process.on('uncaughtException', (err) => {
+    console.log(err);
+})
+
 // app.use(async (ctx) => {
 //     ctx.response.body = env.render('index.html');
 // });

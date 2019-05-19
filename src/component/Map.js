@@ -50,6 +50,8 @@ export default class extends React.Component{
                 let pointA = new Cesium.Cartesian3.fromDegrees(this.dataStore.lon1, this.dataStore.lat1);
                 let pointB = new Cesium.Cartesian3.fromDegrees(this.dataStore.lon2, this.dataStore.lat2);
                 this.drawRect(pointA, pointB);
+            } else {
+                this.removeRect();
             }
         })
 
@@ -142,21 +144,25 @@ export default class extends React.Component{
                 //判断点击处是否有实体存在，若存在实体，且实体为两个截取点之一，则删除该点
                 if (Cesium.defined(pick)) {
                     let clickedEntity = pick.id;
-                    if(this.isPositionOverlap(clickedEntity, this.firstPoint) && this.isPositionOverlap(clickedEntity, this.secondPoint)) {
+                    if(
+                        //说明点击了区域Entity，此时删除两个点和区域
+                        !clickedEntity.position ||
+                        this.isPointOverlap(clickedEntity, this.firstPoint)
+                        && this.isPointOverlap(clickedEntity, this.secondPoint)
+                    ) {
                         //如果鼠标点击点事两个点的重合点，则将两个点位置都置零，地图上显示效果为删除两个点
                         this.dataStore.modifyLonLat('1', 0, 0);
                         this.dataStore.modifyLonLat('2', 0, 0);
-                    } else if (this.isPositionOverlap(clickedEntity, this.firstPoint)) {
+                    } else if (this.isPointOverlap(clickedEntity, this.firstPoint)) {
                         //点击第一个点，则将第一个点移到第二个点处，地图上显示效果为删除第一个点
                         this.dataStore.modifyLonLat('1', this.dataStore.lon2, this.dataStore.lat2);
-                    } else if (this.isPositionOverlap(clickedEntity, this.secondPoint)) {
+                    } else if (this.isPointOverlap(clickedEntity, this.secondPoint)) {
                         //点击第二个点，则将第二个点移到第一个点出，地图上显示效果为删除第二个点
                         this.dataStore.modifyLonLat('2', this.dataStore.lon1, this.dataStore.lat1);
-                    } else {
-                        //点击其它实体，则根据点击点改变两个点位置
-                        this.changePointsPosition(clickPosition);
                     }
-                } else {
+                } else if(
+                    this.dataStore.isFirstPointNull ||
+                    this.dataStore.isSecondPointNull ){
                     //点击地图空白处，则根据点击点改变连个点位置
                     this.changePointsPosition(clickPosition);
                 }
@@ -169,7 +175,7 @@ export default class extends React.Component{
      * @param en1
      * @param en2
      */
-    isPositionOverlap = (en1, en2) => {
+    isPointOverlap = (en1, en2) => {
         return en1.position._value.equals(en2.position._value);
     }
 
@@ -219,9 +225,8 @@ export default class extends React.Component{
         let south = Math.min(pointA.latitude, pointB.latitude);
         let north = Math.max(pointA.latitude, pointB.latitude);
         //如果矩形区域已经存在，则从viewer的实体中删除矩形实体
-        if(this.rectangle){
-            this.viewer.entities.remove(this.rectangle);
-        }
+        this.removeRect();
+
         this.rectangle = this.viewer.entities.add({
             rectangle: {
                 coordinates: Cesium.Rectangle.fromRadians(west, south, east, north),
@@ -231,6 +236,11 @@ export default class extends React.Component{
             }
         })
     };
+
+    removeRect = () => {
+        if(this.rectangle)
+            this.viewer.entities.remove(this.rectangle);
+    }
 
     /**
      * 设置第一个点或者第二个点的位置
