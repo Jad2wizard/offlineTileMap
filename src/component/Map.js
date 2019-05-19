@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import {inject} from 'mobx-react';
-import {autorunAsync, observable} from 'mobx';
+import {autorunAsync} from 'mobx';
 import styles from './Map.less';
 
 Cesium = window.Cesium;
@@ -53,7 +53,7 @@ export default class extends React.Component{
             } else {
                 this.removeRect();
             }
-        })
+        });
 
         /**
          * 检测到矩形经纬度发生变化后更改点的位置
@@ -97,8 +97,9 @@ export default class extends React.Component{
 
             window.viewer = this.viewer;
 
-            this.firstPoint = this.drawPoint(new Cesium.Cartesian3.fromDegrees(this.dataStore.lon1, this.dataStore.lat1));
-            this.secondPoint = this.drawPoint(new Cesium.Cartesian3.fromDegrees(this.dataStore.lon2, this.dataStore.lat2));
+            this.firstPoint = this.drawPoint('1', new Cesium.Cartesian3.fromDegrees(this.dataStore.lon1, this.dataStore.lat1));
+            this.secondPoint = this.drawPoint('2', new Cesium.Cartesian3.fromDegrees(this.dataStore.lon2, this.dataStore.lat2));
+            this.draggingPoint = '';
 
             //添加overlay到viewer中，并设置overlay样式
             this.viewer.container.appendChild(this.overlay);
@@ -119,6 +120,8 @@ export default class extends React.Component{
             scene.screenSpaceCameraController.zoomEventTypes = [Cesium.CameraEventType.WHEEL];
             //将默认的倾斜地图事件触发方式改为鼠标右键
             scene.screenSpaceCameraController.tiltEventTypes = [Cesium.CameraEventType.RIGHT_DRAG];
+            //禁止shift+左键移动camera的事件
+            scene.screenSpaceCameraController.enableLook = false;
 
             //设置鼠标悬浮事件，显示当前鼠标处的经纬度信息
             let viewer = this.viewer
@@ -167,7 +170,37 @@ export default class extends React.Component{
                     this.changePointsPosition(clickPosition);
                 }
             }.bind(this), Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+            //设置shift+鼠标左键拖动两个绘制点的事件
+            viewer.screenSpaceEventHandler.setInputAction(
+                (movement) => {
+                    if(!this.draggingPoint)
+                        return;
+                    let cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid);
+                    if(cartesian){
+                        const endPosition = Cesium.Cartographic.fromCartesian(cartesian, Cesium.Ellipsoid.WGS84);
+                        this.dataStore.modifyLonLat(
+                            this.draggingPoint,
+                            endPosition.longitude * 180 / Math.PI,
+                            endPosition.latitude  * 180 / Math.PI
+                        );
+                    }
+
+                },
+                Cesium.ScreenSpaceEventType.MOUSE_MOVE, Cesium.KeyboardEventModifier.SHIFT
+            );
+
+            viewer.screenSpaceEventHandler.setInputAction((movement) => {
+                let pick = scene.pick(movement.position);
+                if(pick)
+                    this.draggingPoint = pick.id.id;
+            }, Cesium.ScreenSpaceEventType.LEFT_DOWN, Cesium.KeyboardEventModifier.SHIFT);
+
+            viewer.screenSpaceEventHandler.setInputAction(() => {
+                this.draggingPoint = '';
+            }, Cesium.ScreenSpaceEventType.LEFT_UP, Cesium.KeyboardEventModifier.SHIFT);
         }
+
     }
 
     /**
@@ -201,8 +234,9 @@ export default class extends React.Component{
      * 根据给定的位置绘制一个点
      * @param position | Cartesian3
      */
-    drawPoint = (position) => {
+    drawPoint = (id, position) => {
         let entity = this.viewer.entities.add({ //插入实体
+            id,
             position: position,
             point: {
                 pixelSize: 8,
@@ -230,7 +264,7 @@ export default class extends React.Component{
         this.rectangle = this.viewer.entities.add({
             rectangle: {
                 coordinates: Cesium.Rectangle.fromRadians(west, south, east, north),
-                material: Cesium.Color.fromAlpha(Cesium.Color.RED, 0.5),
+                material: Cesium.Color.fromAlpha('#2196f3', 0.5),
                 outline: true,
                 outlineColor: Cesium.Color.RED
             }
