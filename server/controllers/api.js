@@ -7,10 +7,6 @@ const ws = require(resolve(__dirname, './../models/webSock'));
 const moment = require('moment');
 let {generateZip, getLocalIP, getFilesCount} = require(resolve(__dirname, './../utils/index.js'));
 
-const delay = (time = 1000) => new Promise(resolve => {
-    setTimeout(resolve, time)
-});
-const urlReg = /(\/\d+)+/g;
 const localIP = getLocalIP();
 //本地所有tile图片离线路径
 const imgFolder = resolve(__dirname, './../../public/img');

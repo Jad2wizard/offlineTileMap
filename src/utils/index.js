@@ -2,8 +2,12 @@
  * Created by Jad on 2017/8/24.
  */
 
+const MAX_FETCH_NUM = 10
+const waitArray = [];
+let fetchingCount = 0;
+
 const timeout = (time = 10) => new Promise(resolve => {
-    setTimeout(resolve, time * 1000);
+    setTimeout(() => resolve({timeout: true}), time * 1000);
 });
 
 async function getUrl({x, y, z, orgUrl}) {
@@ -12,7 +16,7 @@ async function getUrl({x, y, z, orgUrl}) {
     )
         .then(data => data.json());
     if (res.isCached != '1')
-        await sendImgBase64({x, y, z, url: res.url});
+        waitArray.push({x, y, z, url: res.url});
 }
 
 function sendImgBase64({x, y, z, url}){
@@ -43,12 +47,35 @@ function sendImgBase64({x, y, z, url}){
                         data
                     })
                 })
-            ]).then(() => {
+            ]).then((res) => {
+                console.log(url);
+                if(res.timeout)
+                    console.log('timeout !!!!')
                 resolve();
+            }).finally(() => {
+                fetchingCount--
             })
         };
+
+        img.onerror = e => {
+            console.warn(e)
+            fetchingCount--
+        }
         img.src = url;
     });
 }
+
+(async function(){
+    while (true) {
+        if(waitArray.length === 0)
+            await timeout(10)
+        else if(fetchingCount <= MAX_FETCH_NUM){
+            sendImgBase64(waitArray.shift());
+            fetchingCount++
+        } else {
+            await timeout(1)
+        }
+    }
+})()
 
 export {getUrl};
