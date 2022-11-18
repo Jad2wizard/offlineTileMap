@@ -38,7 +38,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "css-loader": "^0.28.1",
     "eventsource-polyfill": "^0.9.6",
-    "html-webpack-plugin": "^2.29.0",
+    "html-webpack-plugin": "^5.5.0",
     "koa-webpack-dev-middleware": "^1.4.5",
     "koa-webpack-hot-middleware": "^1.0.3",
     "less": "^3.9.0",
